@@ -93,10 +93,7 @@ def update_rates():
 def build_text_chart(currency_code: str, currency_name: str):
     conn = sqlite3.connect("rates.db")
     c = conn.cursor()
-    c.execute(
-        "SELECT date, rate FROM rates WHERE currency = ? ORDER BY date DESC LIMIT 7",
-        (currency_code,),
-    )
+    c.execute("SELECT date, rate FROM rates WHERE currency = ? ORDER BY date DESC LIMIT 7", (currency_code,))
     rows = c.fetchall()
     conn.close()
 
@@ -105,15 +102,18 @@ def build_text_chart(currency_code: str, currency_name: str):
 
     rows.reverse()
     max_rate = max(rate for _, rate in rows)
+    min_rate = min(rate for _, rate in rows)
+    bar_max = 10  # Максимальное количество точек
 
-    text = f"\U0001f4c9 Курс {currency_name} за 7 дней:\n\n"
+    text = f"📉 Курс {currency_name} за 7 дней:\n\n"
     for date_str, rate in rows:
         date_fmt = datetime.strptime(date_str, "%Y-%m-%d").strftime("%d.%m")
-        bar_length = int((rate / max_rate) * 15)
-        bar = "\u250f" + "\u2588" * bar_length
-        text += f"{date_fmt} {bar:<18} {rate} ₸\n"
+        bar_len = int((rate - min_rate) / (max_rate - min_rate + 1e-5) * bar_max)
+        dots = '•' * bar_len or '•'
+        text += f"{date_fmt} | {rate:>6.2f} ₸ | {dots}\n"
 
     return text
+
 
 
 # --- Telegram UI ---
