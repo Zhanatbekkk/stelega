@@ -1,0 +1,21 @@
+# Кэш Python
+__pycache__/
+*.py[cod]
+
+# Виртуальные окружения
+venv/
+env/
+
+# SQLite база данных
+*.db
+
+# Файлы IDE (VS Code, PyCharm и др.)
+.vscode/
+.idea/
+
+# Логи и временные файлы
+*.log
+*.tmp
+
+# Файлы настроек Railway (если есть)
+railway.json
