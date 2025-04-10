@@ -5,6 +5,7 @@ import sqlite3
 import requests
 import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta
+import pytz
 import os
 from telegram import Update, ReplyKeyboardMarkup
 from telegram.ext import (
@@ -19,6 +20,11 @@ TOKEN = "7539763755:AAFcu3JvOUEY7ZkpCR3K4Z1m-ScPd8bNVfI"  # Замени на с
 
 logging.basicConfig(level=logging.INFO)
 
+tz = pytz.timezone("Asia/Almaty")
+now = datetime.now(tz)
+
+formatted = now.strftime("%d.%m.%Y %H:%M:%S")
+print(formatted)
 
 # --- Инициализация базы ---
 def init_db():
@@ -70,6 +76,7 @@ def get_rates_for_date(date: datetime):
 # --- Обновляем курсы за 7 дней ---
 def update_rates():
     print("[UPDATE] Обновление курсов за 7 дней...")
+    today = datetime.now(pytz.timezone("Asia/Almaty"))
     conn = sqlite3.connect("rates.db")
     c = conn.cursor()
     today = datetime.now()
@@ -214,6 +221,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def show_rates(update: Update):
+    tz = pytz.timezone("Asia/Almaty")
     now = datetime.now()
     date = now.strftime("%d.%m.%Y %H:%M:%S")
     conn = sqlite3.connect("rates.db")
