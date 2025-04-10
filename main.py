@@ -1,5 +1,6 @@
 # Конечный код
 
+import logging
 import sqlite3
 import requests
 import xml.etree.ElementTree as ET
@@ -16,6 +17,8 @@ from telegram.ext import (
 )
 
 TOKEN = "7539763755:AAFcu3JvOUEY7ZkpCR3K4Z1m-ScPd8bNVfI"  # Замени на свой токен от BotFather
+
+logging.basicConfig(level=logging.INFO)
 
 
 # --- Инициализация базы ---
