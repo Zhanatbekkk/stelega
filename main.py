@@ -15,7 +15,7 @@ from telegram.ext import (
     filters,
 )
 
-TOKEN = "YOUR_BOT_TOKEN"  # Замени на свой токен от BotFather
+TOKEN = "7539763755:AAFcu3JvOUEY7ZkpCR3K4Z1m-ScPd8bNVfI"  # Замени на свой токен от BotFather
 
 
 # --- Инициализация базы ---
