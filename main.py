@@ -20,9 +20,16 @@ TOKEN = "7539763755:AAFcu3JvOUEY7ZkpCR3K4Z1m-ScPd8bNVfI"  # Замени на с
 
 logging.basicConfig(level=logging.INFO)
 
+tz = pytz.timezone("Asia/Almaty")
+now = datetime.now(tz)
+
+formatted = now.strftime("%d.%m.%Y %H:%M:%S")
+print(formatted)
+
 
 # --- Инициализация базы ---
 def init_db():
+    print("[INIT] Создание базы данных...")
     conn = sqlite3.connect("rates.db")
     c = conn.cursor()
     c.execute(
@@ -37,13 +44,16 @@ def init_db():
     )
     conn.commit()
     conn.close()
+    print("[INIT] База готова.")
 
 
 # --- Получение курсов за одну дату ---
 def get_rates_for_date(date: datetime):
     formatted_date = date.strftime("%d.%m.%Y")
     url = f"https://nationalbank.kz/rss/get_rates.cfm?fdate={formatted_date}"
+    print(f"[HTTP] Запрос к {url}")
     response = requests.get(url)
+    print(f"[HTTP] Код ответа: {response.status_code}")
     if response.status_code != 200:
         return None
     root = ET.fromstring(response.content)
@@ -66,14 +76,17 @@ def get_rates_for_date(date: datetime):
 
 # --- Обновляем курсы за 7 дней ---
 def update_rates():
+    print("[UPDATE] Обновление курсов за 7 дней...")
+    today = datetime.now(pytz.timezone("Asia/Almaty"))
     conn = sqlite3.connect("rates.db")
     c = conn.cursor()
-    today = datetime.now(pytz.timezone("Asia/Almaty"))
+    today = datetime.now()
     for i in range(7):
         date = today - timedelta(days=i)
         c.execute("SELECT 1 FROM rates WHERE date = ?", (date.strftime("%Y-%m-%d"),))
         if c.fetchone():
             continue
+        print(f"[LOAD] Загружаем курс за {date.strftime('%Y-%m-%d')}")
         rates = get_rates_for_date(date)
         if rates:
             c.executemany(
@@ -81,6 +94,7 @@ def update_rates():
             )
     conn.commit()
     conn.close()
+    print("[UPDATE] Обновление завершено.")
 
 
 # --- Текстовый ASCII-график ---
@@ -98,18 +112,17 @@ def build_text_chart(currency_code: str, currency_name: str):
         return "Нет данных для построения графика."
 
     rows.reverse()
-    max_rate = max(rate for _, rate in rows)
+    min_rate = min(rate for _, rate in rows)
+    step = 0.5  # каждая точка = 0.5 ₸
+    max_dots = 10
 
-    text = f"\U0001f4c9 Курс {currency_name} за 7 дней:\n\n"
+    text = f"📉 Курс {currency_name} за 7 дней:\n\n"
     for date_str, rate in rows:
-        date_fmt = (
-            pytz.timezone("Asia/Almaty")
-            .localize(datetime.strptime(date_str, "%Y-%m-%d"))
-            .strftime("%d.%m")
-        )
-        bar_length = int((rate / max_rate) * 15)
-        bar = "\u250f" + "\u2588" * bar_length
-        text += f"{date_fmt} {bar:<18} {rate} ₸\n"
+        date_fmt = datetime.strptime(date_str, "%Y-%m-%d").strftime("%d.%m")
+        diff = rate - min_rate
+        bar_len = min(int(diff / step), max_dots)
+        dots = "•" * (bar_len or 1)
+        text += f"{date_fmt} | {rate:>6.2f} ₸ | {dots}\n"
 
     return text
 
@@ -210,9 +223,11 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def show_rates(update: Update):
-    tz = pytz.timezone("Etc/GMT-5")  # GMT+5
-    now = datetime.now(tz)
-    date_str = now.strftime("%d.%m.%Y %H:%M:%S")
+    tz = pytz.timezone("Asia/Almaty")
+    now = datetime.now(pytz.timezone("Asia/Almaty"))
+
+    date = now.strftime("%d.%m.%Y %H:%M:%S") + " (GMT+5)"
+
     conn = sqlite3.connect("rates.db")
     c = conn.cursor()
     c.execute(
@@ -228,8 +243,7 @@ async def show_rates(update: Update):
         "UZS": "🇺🇿 Узбекский сум",
     }
 
-    text = f"💱 Курсы валют на {date_str} (GMT+5):\n\n"
-
+    text = f"💱 Курсы валют на {date}:\n\n"
     for code, rate in rows:
         label = code_to_label.get(code, code)
         text += f"{label}: {rate} ₸\n"
@@ -244,12 +258,14 @@ async def send_graph(update: Update, code, name):
 
 # --- Main ---
 def main():
+    print("[START] Запуск бота...")
     init_db()
     update_rates()
     app = ApplicationBuilder().token(TOKEN).build()
     app.add_handler(CommandHandler("start", start))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
     app.run_polling()
+    print("[READY] Бот запущен и работает.")
 
 
 if __name__ == "__main__":
