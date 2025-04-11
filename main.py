@@ -279,4 +279,11 @@ def main():
 
 
 if __name__ == "__main__":
+    init_db()
+
+    try:
+        update_rates()
+    except Exception as e:
+        logging.error(f"[ERROR] Не удалось обновить курс: {e}")
+
     main()
