@@ -237,8 +237,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def show_rates(update: Update):
     tz = pytz.timezone("Asia/Almaty")
-    now = datetime.now(pytz.timezone("Asia/Almaty"))
-
+    now = datetime.now(tz)
     date = now.strftime("%d.%m.%Y %H:%M:%S") + " (GMT+5)"
 
     conn = sqlite3.connect("rates.db")
@@ -246,9 +245,10 @@ async def show_rates(update: Update):
     c.execute(
         "SELECT currency, rate FROM rates WHERE date = ?", (now.strftime("%Y-%m-%d"),)
     )
-    rows = c.fetchall()
+    rows = dict(c.fetchall())  # преобразуем в словарь
     conn.close()
 
+    ordered_codes = ["USD", "EUR", "RUB", "TRY", "UZS", "CNY"]  # нужный порядок
     code_to_label = {
         "USD": "🇺🇸 Доллар США",
         "EUR": "🇪🇺 Евро",
@@ -259,9 +259,9 @@ async def show_rates(update: Update):
     }
 
     text = f"💱 Курсы валют на {date}:\n\n"
-    for code, rate in rows:
-        label = code_to_label.get(code, code)
-        text += f"{label}: {rate} ₸\n"
+    for code in ordered_codes:
+        if code in rows:
+            text += f"{code_to_label[code]}: {rows[code]} ₸\n"
 
     await update.message.reply_text(text)
 
