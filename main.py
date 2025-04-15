@@ -59,12 +59,14 @@ def get_rates_for_date(date: datetime):
     root = ET.fromstring(response.content)
 
     target = {
-        "РОССИЙСКИЙ РУБЛЬ": "RUB",
-        "КИТАЙСКИЙ ЮАНЬ": "CNY",
-        "УЗБЕКСКИХ СУМОВ": "UZS",
         "ДОЛЛАР США": "USD",
-        "ЕВРО": "EUR",  # добавлено евро
+        "ЕВРО": "EUR",
+        "РОССИЙСКИЙ РУБЛЬ": "RUB",
+        "ТУРЕЦКИХ ЛИР": "TRY",
+        "УЗБЕКСКИХ СУМОВ": "UZS",
+        "КИТАЙСКИЙ ЮАНЬ": "CNY",
     }
+
 
 
     result = []
@@ -135,12 +137,13 @@ main_keyboard = ReplyKeyboardMarkup(
     resize_keyboard=True,
 )
 graph_keyboard = ReplyKeyboardMarkup(
-    [["📉 USD", "📉 RUB", "📉 CNY", "📉 UZS", "📉 EUR"], ["⬅️ Назад в меню"]],
+    [["📉 USD", "📉 EUR", "📉 RUB"], ["📉 TRY", "📉 UZS", "📉 CNY"], ["⬅️ Назад в меню"]],
     resize_keyboard=True
 )
 
+
 convert_keyboard = ReplyKeyboardMarkup(
-    [["USD", "RUB", "CNY", "UZS", "EUR"], ["🏠 В меню"]],
+    [["USD", "EUR", "RUB"], ["TRY", "UZS", "CNY"], ["🏠 В меню"]],
     resize_keyboard=True
 )
 
@@ -169,11 +172,13 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             code = text.split()[1]
             names = {
                 "USD": "доллара США",
+                "EUR": "евро",
                 "RUB": "рубля",
-                "CNY": "юаня",
+                "TRY": "турецкой лиры",
                 "UZS": "узбекского сума",
-                "EUR": "евро",  # добавлено
+                "CNY": "юаня",
             }
+
 
             name = names.get(code, code)
             await send_graph(update, code, name)
@@ -192,7 +197,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "Выберите действие:", reply_markup=main_keyboard
         )
 
-    elif text in ["USD", "RUB", "CNY", "UZS", "EUR"]:
+    elif text in ["USD", "EUR", "RUB", "TRY", "UZS", "CNY"]:
         if user_convert_state.get(user_id, {}).get("mode") == "convert":
             user_convert_state[user_id]["currency"] = text
             user_convert_state[user_id]["step"] = "enter_amount"
@@ -246,11 +251,13 @@ async def show_rates(update: Update):
 
     code_to_label = {
         "USD": "🇺🇸 Доллар США",
+        "EUR": "🇪🇺 Евро",
         "RUB": "🇷🇺 Рубль",
-        "CNY": "🇨🇳 Юань",
+        "TRY": "🇹🇷 Турецкая лира",
         "UZS": "🇺🇿 Узбекский сум",
-        "EUR": "🇪🇺 Евро",  # добавлено
+        "CNY": "🇨🇳 Юань",
     }
+
 
 
     text = f"💱 Курсы валют на {date}:\n\n"
