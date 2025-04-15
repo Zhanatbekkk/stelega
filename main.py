@@ -62,12 +62,10 @@ def get_rates_for_date(date: datetime):
         "ДОЛЛАР США": "USD",
         "ЕВРО": "EUR",
         "РОССИЙСКИЙ РУБЛЬ": "RUB",
-        "ТУРЕЦКИХ ЛИР": "TRY",
+        "ТУРЕЦКИХ ЛИРЫ": "TRY",
         "УЗБЕКСКИХ СУМОВ": "UZS",
         "КИТАЙСКИЙ ЮАНЬ": "CNY",
     }
-
-
 
     result = []
     for item in root.findall("item"):
@@ -137,14 +135,17 @@ main_keyboard = ReplyKeyboardMarkup(
     resize_keyboard=True,
 )
 graph_keyboard = ReplyKeyboardMarkup(
-    [["📉 USD", "📉 EUR", "📉 RUB"], ["📉 TRY", "📉 UZS", "📉 CNY"], ["⬅️ Назад в меню"]],
-    resize_keyboard=True
+    [
+        ["📉 USD", "📉 EUR", "📉 RUB"],
+        ["📉 TRY", "📉 UZS", "📉 CNY"],
+        ["⬅️ Назад в меню"],
+    ],
+    resize_keyboard=True,
 )
 
 
 convert_keyboard = ReplyKeyboardMarkup(
-    [["USD", "EUR", "RUB"], ["TRY", "UZS", "CNY"], ["🏠 В меню"]],
-    resize_keyboard=True
+    [["USD", "EUR", "RUB"], ["TRY", "UZS", "CNY"], ["🏠 В меню"]], resize_keyboard=True
 )
 
 
@@ -178,7 +179,6 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 "UZS": "узбекского сума",
                 "CNY": "юаня",
             }
-
 
             name = names.get(code, code)
             await send_graph(update, code, name)
@@ -257,8 +257,6 @@ async def show_rates(update: Update):
         "UZS": "🇺🇿 Узбекский сум",
         "CNY": "🇨🇳 Юань",
     }
-
-
 
     text = f"💱 Курсы валют на {date}:\n\n"
     for code, rate in rows:
