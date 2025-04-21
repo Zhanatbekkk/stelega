@@ -65,6 +65,8 @@ def get_rates_for_date(date: datetime):
         "ТУРЕЦКАЯ ЛИРА": "TRY",
         "УЗБЕКСКИХ СУМОВ": "UZS",
         "КИТАЙСКИЙ ЮАНЬ": "CNY",
+        "ПОЛЬСКИЙ ЗЛОТЫЙ": "PLN",
+
     }
 
     result = []
@@ -138,14 +140,14 @@ graph_keyboard = ReplyKeyboardMarkup(
     [
         ["📉 USD", "📉 EUR", "📉 RUB"],
         ["📉 TRY", "📉 UZS", "📉 CNY"],
-        ["⬅️ Назад в меню"],
+        ["📉 PLN", "⬅️ Назад в меню"],
     ],
     resize_keyboard=True,
 )
 
 
 convert_keyboard = ReplyKeyboardMarkup(
-    [["USD", "EUR", "RUB"], ["TRY", "UZS", "CNY"], ["🏠 В меню"]], resize_keyboard=True
+    [["USD", "EUR", "RUB"], ["TRY", "UZS", "CNY"], ["PLN", "🏠 В меню"]], resize_keyboard=True
 )
 
 
@@ -178,6 +180,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 "TRY": "турецкой лиры",
                 "UZS": "узбекского сума",
                 "CNY": "юаня",
+                "PLN": "польского злотого",
             }
 
             name = names.get(code, code)
@@ -197,7 +200,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "Выберите действие:", reply_markup=main_keyboard
         )
 
-    elif text in ["USD", "EUR", "RUB", "TRY", "UZS", "CNY"]:
+    elif text in ["USD", "EUR", "RUB", "TRY", "UZS", "CNY", "PLN"]:
         if user_convert_state.get(user_id, {}).get("mode") == "convert":
             user_convert_state[user_id]["currency"] = text
             user_convert_state[user_id]["step"] = "enter_amount"
@@ -248,7 +251,7 @@ async def show_rates(update: Update):
     rows = dict(c.fetchall())  # преобразуем в словарь
     conn.close()
 
-    ordered_codes = ["USD", "EUR", "RUB", "TRY", "UZS", "CNY"]  # нужный порядок
+    ordered_codes = ["USD", "EUR", "RUB", "TRY", "UZS", "CNY", "PLN"]  # нужный порядок
     code_to_label = {
         "USD": "🇺🇸 Доллар США",
         "EUR": "🇪🇺 Евро",
@@ -256,6 +259,8 @@ async def show_rates(update: Update):
         "TRY": "🇹🇷 Турецкая лира",
         "UZS": "🇺🇿 Узбекский сум",
         "CNY": "🇨🇳 Юань",
+        "PLN": "🇵🇱 Польский злотый",
+
     }
 
     text = f"💱 Курсы валют на {date}:\n\n"
